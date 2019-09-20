@@ -30,7 +30,7 @@ QQ群：650547109  欢迎交流，也欢迎定制系统，全职在家提供技�
 
 第一步：拉取代码
 ```
-git clone  https://github.com/kong-qi/kongqi_laravel_admin.git
+git clone  https://github.com/kong-qi/kongqi_laravel_admin_no_plugin.git
 
 
 ```
@@ -137,7 +137,11 @@ http://www.xx.com/admin
 
 安装完成
 
-### 插件库地址
+### 插件版本
+>插件版本
+https://github.com/kong-qi/kongqi_laravel_admin.git
+
+>插件库地址
 https://github.com/kong-qi/kongqi-laravel-admin-plugin
 
 ## 文件说明
