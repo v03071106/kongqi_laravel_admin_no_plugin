@@ -1,39 +1,49 @@
 <?php
-$admin_path = 'admin';
+//后台绑定域名
+$admin_domain = env('ADMIN_URL','');
+$admin_path='admin';
 /*****************无需验证中间件**********************/
 //无需验证权限，或者里面验证
-Route::prefix($admin_path)->middleware(['install'])->name('admin.')->group(function ($route) {
+
+if ($admin_domain) {
+
+    $route = Route::domain($admin_domain);
+} else {
+    $route = Route::prefix($admin_path ?: '/admin/');
+}
+$route->middleware(['install'])->name('admin.')->group(function ($route) {
     $route->get('/login', 'LoginController@showLoginForm')->name('login');
     $route->post('login', 'LoginController@login')->name('post.login');
     $route->get('logout', 'LoginController@logout')->name('logout');
-    Route::get('show/mobile/{token}', 'ViewShowController@index')->name('show.mobile');
 });
 
 /*****************验证中间件**********************/
-Route::prefix($admin_path)->middleware(['install', 'admin_auth', 'admin_check'])->name('admin.')->group(function ($route) {
+$route->middleware(['install', 'admin_auth', 'admin_check'])->name('admin.')->group(function ($route) {
     $route->get('home', 'HomeController@console')->name('home.console');
+    $route->get('clear/cache', 'HomeController@clearCache')->name('home.clear.cache');
     $route->get('/', 'HomeController@index')->name('home');
+    $route->get('/admin_plugin/{ename}', 'HomeController@plugin')->name('home.plugin');
 
     $route->any('upload/{type}', ['uses' => 'FileUploadController@handle'])->name('upload');
     $route->any('icon', ['uses' => 'IconController@index'])->name('icon');
     $route->any('error/{code}', ['uses' => 'ErrorController@index'])->name('error');
     $route->any('excel/import', ['uses' => 'ExcelController@import'])->name('excel.import');
 
+    //增删改查存放的控制器数组
     $resource = [
         'AdminController',
         'AdminRoleController',
         'AdminPermissionController',
         'CategoryController',
-
+        'PluginController'
     ];
     //需要批量操作
     $more_add_controller = [
-        'AdminPermissionController'
+        'AdminPermissionController',
     ];
     //只需要首页
     $only_index_controller = [
-        'AdminLogController'
-
+        'AdminLogController',
     ];
     //
     $only_add_controller = [
@@ -74,6 +84,13 @@ Route::prefix($admin_path)->middleware(['install', 'admin_auth', 'admin_check'])
         if (in_array($c, $more_add_controller)) {
             $route->post($controller_path . '/import/post', ['uses' => $c . '@importPost'])->name($controller_path . '.import_post');
             $route->get($controller_path . '/import/tpl', ['uses' => $c . '@importTpl'])->name($controller_path . '.import_tpl');
+        }
+
+        //额外增加
+        if(in_array($c,['PluginController']))
+        {
+
+            $route->post($controller_path . '/install/{ename}/{type}', ['uses' => $c . '@install'])->name($controller_path . '.install');
         }
     }
 

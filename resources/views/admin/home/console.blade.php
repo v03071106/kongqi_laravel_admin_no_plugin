@@ -25,14 +25,14 @@
 
 
                             </script>
-                           @kongqi('system_version') <a href="//@kongqi('system_domain')" target="_blank"
-                                          style="padding-left: 15px;">更新日志</a>
+                            @kongqi('system_version') <a href="//@kongqi('system_domain')" target="_blank"
+                                                         style="padding-left: 15px;">更新日志</a>
                         </td>
                     </tr>
                     <tr>
                         <td>基于框架</td>
                         <td>
-                           PHP + Laravel {{ app()->version() }}
+                            PHP + Laravel {{ app()->version() }}
 
                         </td>
                     </tr>
@@ -44,7 +44,7 @@
                         <td>许可</td>
                         <td style="padding-bottom: 0;">
 
-                                准许MIT协议，允许你重新修改和包装，但需要保留版权信息。
+                            准许MIT协议，允许你重新修改和包装，但需要保留版权信息。
 
                         </td>
                     </tr>
@@ -68,6 +68,14 @@
                     </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <div class="layui-card-header">插件</div>
+            <div class="layui-card-body layui-text">
+                <iframe src="//market.kongqikeji.com/" height="400" frameborder="0" width="100%"></iframe>
             </div>
         </div>
     </div>

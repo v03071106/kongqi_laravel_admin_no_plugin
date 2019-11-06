@@ -97,8 +97,8 @@ class AdminController extends BaseDefaultController
     }
     public function apiJsonItemExtend($item)
     {
-        $item->roles_arr=$item->roles->pluck('cn_name')->toArray();
-        return $item;
+       $item->roles_arr=$item->roles->pluck('cn_name')->toArray();
+       return $item;
     }
 
     public function password()
@@ -123,12 +123,12 @@ class AdminController extends BaseDefaultController
         if(Hash::check($old_password,$admin->password)){
             //进行更新
             $admin->password=($new_password);
-            $r= $admin->save();
-            if($r)
-            {
-                $this->insertLog('修改密码成功');
-                return $this->returnOkApi('修改密码成功');
-            }
+           $r= $admin->save();
+           if($r)
+           {
+               $this->insertLog('修改密码成功');
+               return $this->returnOkApi('修改密码成功');
+           }
             $this->insertLog('修改密码失败');
             return $this->returnErrorApi('修改密码失败');
         }

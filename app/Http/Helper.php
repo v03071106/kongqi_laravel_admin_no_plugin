@@ -99,6 +99,7 @@ function ___($path)
     return asset('/static/' . $path);
 }
 
+
 /**
  * 图片地址设置，
  * @param $str
@@ -146,80 +147,95 @@ function picurl($str, $thumb = 'thumb')
  */
 function config_cache($config_key, $group_type = 'config', $data = [])
 {
-    $param = explode('.', $config_key);
-    if (empty($param)) {
+
+    try{
+        $param = explode('.', $config_key);
+        if (empty($param)) {
+            return false;
+        }
+
+        if (empty($data)) {
+            $config = cache($param[0]);
+
+
+            //是否存在这个缓存
+            if (!empty($config)) {
+                $config = ($config);
+            }else
+            {
+                //缓存文件不存在就读取数据库
+                $res = \App\Models\Config::where('group_type',$param[0])->get()->toArray();
+                $config=[];
+                if ($res) {
+                    foreach ($res as $k => $val) {
+                        $config[$val['ename']] = $val['content'];
+                    }
+                    //存入缓存
+                    \Illuminate\Support\Facades\Cache::forever($param[0], ($config));
+                }
+            }
+
+            if (count($param) > 0) {
+
+                //判断获取值参数是否存在，如果存在的话，则去，没有存在返回数组
+                if (isset($param[1])) {
+                    $config = is_array($config) ? $config : [];
+                    if (array_key_exists($param[1], $config)) {
+                        return $config[$param[1]];
+                    }
+                } else {
+                    return $config = is_array($config) ? $config : false;
+                }
+            } else {
+                return $config;
+            }
+        } else {
+            //添加/更新
+            $newArr = [];
+            $newData = [];
+            $result = \App\Models\Config::where('group_type',$group_type)->get()->toArray();
+
+            if (count($result) > 0) {
+
+                foreach ($result as $val) {
+                    $temp[$val['ename']] = $val['content'];
+                }
+                foreach ($data as $k => $v) {
+                    $newArr = ['ename' => $k, 'content' => trim($v), 'group_type' => $group_type];
+                    if (!isset($temp[$k])) {
+
+                        \App\Models\Config::create($newArr);//新key数据插入数据库
+                    } else {
+                        if ($v != $temp[$k]) {
+                            \App\Models\Config::where("ename", $k)->update($newArr);//缓存key存在且值有变更新此项
+                        }
+
+                    }
+                }
+
+                //更新后的新的记录
+                $newRes = \App\Models\Config::where('group_type',$group_type)->get()->toArray();
+
+                foreach ($newRes as $rs) {
+                    $newData[$rs['ename']] = $rs['content'];
+                }
+            } else {
+
+                foreach ($data as $k => $v) {
+                    $newArr[] = ['ename' => $k, 'content' => trim($v), 'group_type' => $group_type];
+                }
+
+                \App\Models\Config::insert($newArr);
+                $newData = $data;
+            }
+            $newData = ($newData);
+            \Illuminate\Support\Facades\Cache::forever($param[0], $newData);
+        }
+    }catch (Exception $exception)
+    {
         return false;
     }
 
-    if (empty($data)) {
-        $config = cache($param[0]);
-        //是否存在这个缓存
-        if (empty($config)) {
-            return false;
-        }
-        $config = unserialize($config);
-        if (empty($config)) {
-            //缓存文件不存在就读取数据库
-            $res = \App\Models\Config::get()->toArray();
-            if ($res) {
-                foreach ($res as $k => $val) {
-                    $config[$val['ename']] = $val['content'];
-                }
-                //存入缓存
-                \Illuminate\Support\Facades\Cache::forever($param[0], serialize($config));
-            }
-        }
-
-        if (count($param) > 0) {
-            //判断获取值参数是否存在，如果存在的话，则去，没有存在返回数组
-            if (isset($param[1])) {
-                $config = is_array($config) ? $config : [];
-                if (array_key_exists($param[1], $config)) {
-                    return $config[$param[1]];
-                }
-            } else {
-                return $config = is_array($config) ? $config : false;
-            }
-        } else {
-            return $config;
-        }
-    } else {
-        //添加/更新
-        $newArr = [];
-        $newData = [];
-        $result = \App\Models\Config::get()->toArray();
-        if (count($result) > 0) {
-
-            foreach ($result as $val) {
-                $temp[$val['ename']] = $val['content'];
-            }
-            foreach ($data as $k => $v) {
-                $newArr = ['ename' => $k, 'content' => trim($v), 'group_type' => $group_type];
-                if (!isset($temp[$k])) {
-
-                    \App\Models\Config::create($newArr);//新key数据插入数据库
-                } else {
-                    if ($v != $temp[$k]) {
-                        \App\Models\Config::where("ename", $k)->update($newArr);//缓存key存在且值有变更新此项
-                    }
-
-                }
-            }
-            //更新后的新的记录
-            $newRes = \App\Models\Config::get()->toArray();
-            foreach ($newRes as $rs) {
-                $newData[$rs['ename']] = $rs['content'];
-            }
-        } else {
-            foreach ($data as $k => $v) {
-                $newArr[] = ['ename' => $k, 'content' => trim($v), 'group_type' => $group_type];
-            }
-            \App\Models\Config::insert($newArr);
-            $newData = $data;
-        }
-        $newData = serialize($newData);
-        \Illuminate\Support\Facades\Cache::forever($param[0], $newData);
-    }
 }
 
 /**
@@ -258,8 +274,6 @@ function show_hide_menu_auth($route_name)
         return true;
     }
     try {
-
-
         if ($admin->hasPermissionTo($route_name, 'admin')) {
 
             return true;
@@ -346,11 +360,229 @@ function wx_share($mc_id, $url, $debug = 0)
     } else {
         $config = \App\Models\WxMerchant::first();
     }
-   /* dump($config->toArray());
-    dump($url);*/
+    /* dump($config->toArray());
+     dump($url);*/
 
     \App\Services\WeiXinServices::config($config['app_id'], $config['app_secret']);
-    $data = \App\Services\WeiXinServices::share(['updateAppMessageShareData', 'updateTimelineShareData','onMenuShareAppMessage','onMenuShareTimeline'], $url, $debug);
+    $data = \App\Services\WeiXinServices::share(['updateAppMessageShareData', 'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'], $url, $debug);
     return $data;
 }
 
+function get_dir($path, $abs_path = 0, $type = 'dir')
+{
+    $path_file = scandir($path);
+    if (empty($path_file)) {
+        return false;
+    }
+    $path_arr = [];
+    $file_arr = [];
+    foreach ($path_file as $k => $v) {
+        if (in_array($v, ['.', '..'])) {
+            continue;
+        }
+        if (is_dir($path . $v)) {
+            $path_arr[] = $abs_path ? $path . $v : $v;
+        } elseif (is_file($path . $v)) {
+            $file_arr[] = $abs_path ? $path . $v : $v;
+        }
+    }
+    if ($type == 'dir') {
+        return $path_arr;
+    } else {
+        return $file_arr;
+    }
+}
+
+
+function nroute($name, $para = [])
+{
+    try {
+        return route( $name, $para);
+    } catch (Exception $exception) {
+        return $exception->getMessage();
+    }
+}
+
+
+
+
+
+/**
+ * 判断是否手机端
+ * @return bool
+ */
+function is_mobile_client()
+{
+// 如果有HTTP_X_WAP_PROFILE则一定是移动设备
+    if (isset ($_SERVER['HTTP_X_WAP_PROFILE'])) {
+        return true;
+    }
+    // 判断手机发送的客户端标志,兼容性有待提高,把常见的类型放到前面
+    if (isset ($_SERVER['HTTP_USER_AGENT'])) {
+        $clientkeywords = [
+            'android',
+            'iphone',
+            'samsung',
+            'ucweb',
+            'wap',
+            'mobile',
+            'nokia',
+            'sony',
+            'ericsson',
+            'mot',
+            'htc',
+            'sgh',
+            'lg',
+            'sharp',
+            'sie-',
+            'philips',
+            'panasonic',
+            'alcatel',
+            'lenovo',
+            'ipod',
+            'blackberry',
+            'meizu',
+            'netfront',
+            'symbian',
+            'windowsce',
+            'palm',
+            'operamini',
+            'operamobi',
+            'openwave',
+            'nexusone',
+            'cldc',
+            'midp'
+        ];
+        // 从HTTP_USER_AGENT中查找手机浏览器的关键字
+        if (preg_match("/(" . implode('|', $clientkeywords) . ")/i", strtolower($_SERVER['HTTP_USER_AGENT']))) {
+            return true;
+        }
+    }
+    // 协议法，因为有可能不准确，放到最后判断
+    if (isset ($_SERVER['HTTP_ACCEPT'])) {
+        // 如果只支持wml并且不支持html那一定是移动设备
+        // 如果支持wml和html但是wml在html之前则是移动设备
+        if ((strpos($_SERVER['HTTP_ACCEPT'], 'vnd.wap.wml') !== false) && (strpos($_SERVER['HTTP_ACCEPT'], 'text/html') === false || (strpos($_SERVER['HTTP_ACCEPT'], 'vnd.wap.wml') < strpos($_SERVER['HTTP_ACCEPT'], 'text/html')))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * @param $data
+ * @param $parent_id
+ * @return array
+ * option 树形
+ */
+function get_tree_option($data, $parent_id)
+{
+    $stack = [$parent_id];
+    $child = [];
+    $added = [];
+    $options = [];
+    $obj = [];
+    $loop = 0;
+    $depth = -1;
+    foreach ($data as $node) {
+        $pid = $node['parent_id'];
+        if (!isset($child[$pid])) {
+            $child[$pid] = [];
+        }
+        array_push($child[$pid], $node['id']);
+        $obj[$node['id']] = $node;
+    }
+
+    while (count($stack) > 0) {
+        $id = $stack[0];
+        $flag = false;
+        $node = isset($obj[$id]) ? $obj[$id] : null;
+        if (isset($child[$id])) {
+            for ($i = count($child[$id]) - 1; $i >= 0; $i--) {
+                array_unshift($stack, $child[$id][$i]);
+            }
+            $flag = true;
+        }
+        if ($id != $parent_id && $node && !isset($added[$id])) {
+            $node['depth'] = $depth;
+            $options[] = $node;
+            $added[$id] = true;
+        }
+        if ($flag == true) {
+            $depth++;
+        } else {
+            if ($node) {
+                for ($i = count($child[$node['parent_id']]) - 1; $i >= 0; $i--) {
+                    if ($child[$node['parent_id']][$i] == $id) {
+                        array_splice($child[$node['parent_id']], $i, 1);
+                        break;
+                    }
+                }
+                if (count($child[$node['parent_id']]) == 0) {
+                    $child[$node['parent_id']] = null;
+                    $depth--;
+                }
+            }
+            array_shift($stack);
+        }
+        $loop++;
+        if ($loop > 5000) return $options;
+    }
+    unset($child);
+    unset($obj);
+    return $options;
+}
+/**
+ * 转换英文空格和专有词汇
+ * @param $html
+ * @return null|string|string[]
+ */
+function correct_ename($html){
+    $obj=new \Naux\AutoCorrect();
+    return $obj->convert($html);
+}
+
+/**
+ * 输出地址
+ * @param $path
+ * @param int $is_https
+ * @return bool|\Illuminate\Contracts\Routing\UrlGenerator|string
+ */
+function to_url($path, $is_https = 0)
+{
+    //判断是否HTTPS
+    if(is_https())
+    {
+        $is_https=1;
+    }
+    if (empty($path)) {
+        return false;
+    }
+    return url($path,[],$is_https);
+}
+
+/**
+ * 判断是否https
+ * @return bool
+ */
+function is_https()
+{
+    if (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
+        return true;
+    } elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        return true;
+    } elseif (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) && strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off') {
+        return true;
+    }
+    return false;
+}
+/**
+ * 这个用于我们上传图片的设置，
+ * 有时候我们本地并不想要补齐地址，上线后才使用补齐http/https
+ * @param $path
+ * @return bool|\Illuminate\Contracts\Routing\UrlGenerator|string
+ */
+function img_url($path){
+    //判断是否开启了补齐域名，去.env获取，默认补齐
+    return env('IMG_HTTP',1)?to_url($path):$path;
+}

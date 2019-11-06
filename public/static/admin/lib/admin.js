@@ -735,7 +735,7 @@ layui.define(['view', 'md5','cacheNav'], function (exports) {
         var key=md5.md5(itemObj.attr('lay-id'));
         console.log(itemObj.attr('lay-id'));
         console.log(key);
-        cacheNav.deleteKey(key);
+       cacheNav.deleteKey(key);
 
         obj.index && admin.tabsBody(obj.index).remove();
         setThisRouter(othis);
@@ -744,7 +744,7 @@ layui.define(['view', 'md5','cacheNav'], function (exports) {
         admin.delResize();
     });
 
-    var cache_navs=cacheNav.get();
+   var cache_navs=cacheNav.get();
 
     var md5 = layui.md5;
 

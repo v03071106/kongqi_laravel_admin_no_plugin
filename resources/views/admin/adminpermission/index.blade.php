@@ -3,7 +3,7 @@
     <link rel="stylesheet" href="{{ ___('/admin/modules/treetable-lay/treetable.css') }}">
 @endsection
 @section('content')
-    <a href="javascript:void(0)" class="layui-btn js-refrest">刷新渲染</a>
+
     @include('admin.'.$controller_base_lower.'.form')
     @include('admin.layout.table')
 @endsection
@@ -47,7 +47,7 @@
                     {field: 'cn_name', minWidth: 200, title: '名称'},
                     {field: 'name', title: '路由',edit:1},
 
-                    {title: '操作', width: 150, align: 'center', toolbar: '#tpl-create-edit'}
+                    {title: '操作', width: 200, align: 'center', toolbar: '#tpl-create-edit'}
                 ]],
 
                 done: function () {

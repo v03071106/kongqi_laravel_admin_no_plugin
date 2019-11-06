@@ -22,9 +22,7 @@ trait BladeTrait
     public function display($data = [])
     {
 
-        //取得表名
-        $this->getTable();
-        $this->pageName();
+
         $this->commonBlade();
 
 
@@ -36,13 +34,20 @@ trait BladeTrait
     public function setModelControllerView($view_name = '')
     {
         $route_info = $this->routeInfo;
-        $view_name ? $this->bladeView = strtolower($this->module) . '.' . strtolower($route_info['controller_base']) . '.' . $view_name : '';
+        $controller=$this->toModelBlade($route_info['controller_base']) . '.' ;
+
+        $view_name ? $this->bladeView =$this->toModelBlade($this->module). '.' .$controller . $view_name : '';
     }
 
     public function setModelView($view_name = '')
     {
 
-        $view_name ? $this->bladeView = strtolower($this->module) . '.' . $view_name : '';
+        $view_name ? $this->bladeView = $this->toModelBlade($this->module) . '.' . $view_name : '';
+    }
+
+    public function toModelBlade($path){
+        $arr= explode("\\",$path);
+        return strtolower(implode(".",$arr));
     }
 
     /**
@@ -56,13 +61,13 @@ trait BladeTrait
     public function getBlade()
     {
         $route_info = $this->routeInfo;
-        $controller=strtolower($route_info['controller_base']) . '.' ;
+        $controller=$this->toModelBlade($route_info['controller_base']) . '.' ;
         if($this->viewNotControllerBlade())
         {
             $controller='';
         }
 
-        $this->bladeView = strtolower($this->module) . '.' .$controller . $route_info['action_name'];
+        $this->bladeView =$this->toModelBlade($this->module) . '.' .$controller . $route_info['action_name'];
 
     }
 

@@ -6,11 +6,11 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
         one: uploadOne,
         more: uploadMore,
         json_pic: jsonThumbs,
-        list_upload:uploadFileList,
+        list_upload: uploadFileList,
         place: uploadPlace,
-        place_editor: uploadEditor
+        place_editor: uploadEditor,
+        place_api: uploadOpenApi
     }
-
 
 
     function uploadPlaceApi(url, callFun) {
@@ -26,7 +26,57 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
         })
     }
 
-    function uploadEditor(type, is_more, callFun) {
+    function uploadOpenApi(type, is_more, open_file, callFun) {
+        var url = g_upload_files + '?is_more=' + is_more + '&type=' + type + '&open_file=' + open_file;
+        uploadPlaceApi(url, function (layero, index) {
+            var item_img = layero.find('iframe').contents().find('.on');
+            console.log(item_img);
+            var img_arr = [];
+            if (is_more == 1) {
+
+                item_img.find('img').each(function () {
+                    var tmpname = $(this).data('tmpname');
+                    var path = $(this).data('path');
+                    var img_src = $(this).data('view_src');
+                    var file_type = $(this).data('type');
+                    var oss = $(this).data('oss');
+                    var ext = $(this).data('ext');
+                    var res = {
+                        type: file_type,
+                        view_src: img_src,
+                        oss_type: oss,
+                        ext: ext,
+                        tmpname: tmpname,
+                        path: path
+                    }
+                    img_arr.push(res);
+                });
+
+            } else {
+
+
+                var tmpname = item_img.find('img').data('tmpname');
+                var path = item_img.find('img').data('path');
+                var img_src = item_img.find('img').data('view_src');
+                var file_type = item_img.find('img').data('type');
+                var oss = item_img.find('img').data('oss');
+                var ext = item_img.find('img').data('ext');
+                var res = {
+                    type: file_type,
+                    view_src: img_src,
+                    oss_type: oss,
+                    ext: ext,
+                    tmpname: tmpname,
+                    path: path
+                }
+                img_arr.push(res);
+            }
+            layer.close(index); //关闭弹层
+            return callFun && callFun(img_arr);
+        });
+    }
+
+    function uploadEditor(type, is_more, callFun, is_markdown) {
         var url = g_upload_files + '?is_more=' + is_more + '&type=' + type;
         uploadPlaceApi(url, function (layero, index) {
             var item_img = layero.find('iframe').contents().find('.on');
@@ -52,21 +102,29 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
                     if (file_type == 'vedio') {
 
                     } else if (file_type == 'image') {
+                        if (is_markdown) {
+                            html_str += '![' + tmpname + '](' + path + ')  \n';
+                        } else {
+                            html_str += '<img src="' + path + '" alt="' + tmpname + '">';
+                        }
 
-                        html_str += '<img src="' + path + '" alt="' + tmpname + '">';
 
                     }
-                    callFun && callFun(html_str);
 
 
                 });
 
-
+                callFun && callFun(html_str);
             } else {
 
                 path = item_img.find('img').data('path');
                 var tmpname = $(this).data('tmpname');
-                html_str = '<img src="' + path + '" alt="' + tmpname + '">';
+
+                if (is_markdown) {
+                    html_str = '![' + tmpname + '](' + path + ')  ';
+                } else {
+                    html_str = '<img src="' + path + '" alt="' + tmpname + '">';
+                }
                 callFun && callFun(html_str);
             }
 
@@ -74,9 +132,9 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
         });
     }
 
-    function uploadPlace(obj, type, is_more,open_file) {
+    function uploadPlace(obj, type, is_more, open_file) {
         //打开图片空间
-        var url = g_upload_files + '?is_more=' + is_more + '&type=' + type+'&open_file='+open_file;
+        var url = g_upload_files + '?is_more=' + is_more + '&type=' + type + '&open_file=' + open_file;
 
         uploadPlaceApi(url, function (layero, index) {
             var item_img = layero.find('iframe').contents().find('.on');
@@ -224,7 +282,8 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
      */
     function uploadApi(obj, upload_type, screen_type, accept_type, successFun, resFun) {
         var group_id = 0;
-        group_id=$(obj).data('group_id');
+        group_id = $(obj).data('group_id');
+
 
         return upload.render({
             elem: $(obj),
@@ -258,12 +317,13 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
     function uploadFileList(obj, accept_type) {
         //上传类型
         var upload_type = $(obj).data('type');
+        console.log('upload_type', upload_type);
         //使用场景
         var screen_type = $(obj).data('screen_type');
         accept_type = accept_type || 'images';
         upload_type = upload_type || 'image';
         screen_type = screen_type || '';
-        if (accept_type != 'images') {
+        if (upload_type != 'image') {
             accept_type = 'file';
         }
         return uploadApi(obj, upload_type, screen_type, accept_type, function (res) {
@@ -271,9 +331,9 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
             var parentObj = $(obj).parents(".upload-tuku-area");
 
             var html = '<div class="item layui-col-xs6 layui-col-sm3 layui-col-md2 tupload-item upload-item-more ">' +
-                ' <img data-type="' + res.type + '" data-view_src="' + res.view_src + '" data-oss="' + res.oss_type + '" data-ext="' + res.ext + '" data-tmpname="' + res.tmpname + '" data-src="' + res.path + '" src="' + res.view_src + '" class="upload-item-pic" alt=""> ' +
-                '<div class="item-foot-tools">' +res.tmpname+
-                 '</div> ' +
+                ' <img data-type="' + res.type + '" data-view_src="' + res.view_src + '" data-oss="' + res.oss_type + '" data-ext="' + res.ext + '" data-tmpname="' + res.tmpname + '" data-path="' + res.path + '" src="' + res.view_src + '" class="upload-item-pic" alt=""> ' +
+                '<div class="item-foot-tools">' + res.tmpname +
+                '</div> ' +
                 '</div>';
             //插入数据
             parentObj.find(".upload-tuku-list").prepend(html);
@@ -297,9 +357,8 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
         if (accept_type != 'images') {
             accept_type = 'file';
         }
-        if($(obj).data('accept_type'))
-        {
-            accept_type=$(obj).data('accept_type');
+        if ($(obj).data('accept_type')) {
+            accept_type = $(obj).data('accept_type');
         }
         return uploadApi(obj, upload_type, screen_type, accept_type, function (res) {
             //找到父
@@ -315,6 +374,7 @@ layui.define(['upload', 'laypage', 'form', 'laydate', 'layerOpen', 'layer'], fun
         })
 
     };
+
     /**
      * 多文件上传
      * @param obj 触发上传对象

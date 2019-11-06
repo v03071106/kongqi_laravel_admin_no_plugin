@@ -19,7 +19,6 @@ class BaseController extends Controller
         //共享路由信息到变量
         $this->getBlade();
 
-
     }
     protected function getTable(){
 

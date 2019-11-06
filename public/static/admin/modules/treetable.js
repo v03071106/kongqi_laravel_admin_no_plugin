@@ -5,10 +5,10 @@ layui.define(['layer', 'request', 'table','listTable','layerOpen'], function (ex
     var table = layui.table;
     var listTable=layui.listTable;
 
-   /* layui.use(['listTable'], function(){
-        listTable=layui.listTable;
-    })*/
-   var has_hander=0;
+    /* layui.use(['listTable'], function(){
+         listTable=layui.listTable;
+     })*/
+    var has_hander=0;
 
 
     var treetable = {

@@ -18,7 +18,7 @@ trait  QueryWhereTrait
     protected $timeFields = [];
 
     /**
-     * 检索字段model_id的查询
+     * 检索字段model_id的查询，whereBy这个是前缀，后面的才是查询字段
      * 参数：['model_id'=>1],则查询model_id=1的SQL语句
      * @param $value
      */
@@ -26,6 +26,16 @@ trait  QueryWhereTrait
     {
         $data = [
             'model_id' => [
+                'type' => '=',
+                'value' => $value
+            ]
+        ];
+        $this->addWhere($data);
+    }
+    public function whereByGroupType($value)
+    {
+        $data = [
+            'group_type' => [
                 'type' => '=',
                 'value' => $value
             ]

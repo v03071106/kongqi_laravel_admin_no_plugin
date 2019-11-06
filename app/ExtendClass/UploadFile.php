@@ -26,7 +26,7 @@ class UploadFile
         ];
         switch ($type) {
             case 'image':
-                $config['allowFiles'] = [".png", ".jpg", ".jpeg", ".gif", ".bmp"];
+                $config['allowFiles'] = [".png", ".jpg", ".jpeg", ".gif", ".bmp",".ico"];
                 break;
             case 'zip':
                 $config['allowFiles'] = ['zip', ".rar", ".zip", ".tar", ".gz", ".7z", ".bz2"];
@@ -61,36 +61,6 @@ class UploadFile
 
 
         return $config;
-    }
-
-    /**
-     * 远程图片上传
-     * @param string $filename
-     * @param string $type
-     * @param string $is_oss
-     * @param $uptype
-     * @return mixed
-     */
-    public static  function  remote($filename = "file", $type = 'image', $is_oss = '', $uptype){
-        $config = self::config($type);
-         AnyUpload::config($filename, $config,$uptype);
-        $result = AnyUpload::getFileInfo();
-        return $result;
-    }
-
-    /**
-     * base64位上传
-     * @param string $filename
-     * @param string $is_oss
-     * @param string $source
-     * @return mixed
-     */
-    public static function uploadBase64($filename="file",$is_oss='',$source='admin'){
-        $config = self::config('image');
-        $up = AnyUpload::config($filename, $config,'base64');
-        $result = $up->getFileInfo();
-        return $result;
-
     }
 
     /**
@@ -145,11 +115,39 @@ class UploadFile
         $result['view_src']=$result['path'];
         if($result['type']!='image')
         {
-            if(in_array($result['ext'],['.xlsx','.xls']))
-            {
-                $result['view_src']=___('/admin/images/excel.jpg');
+
+            $img_pic='';
+            if (in_array($result['ext'], ['.xlsx', '.xls'])) {
+                $img_pic = 'excel.jpg';
+                $img_pic = ___('/admin/images/' . $img_pic);
             }
+            if (in_array($result['ext'], ['.doc', '.docx'])) {
+                $img_pic = 'word.jpg';
+                $img_pic = ___('/admin/images/' . $img_pic);
+            }
+            if (in_array($result['ext'], ['zip', ".rar", ".zip", ".tar", ".gz", ".7z", ".bz2"])) {
+                $img_pic = 'zip.jpg';
+                $img_pic = ___('/admin/images/' . $img_pic);
+            }
+            if (in_array($result['ext'], ['zip', ".rar", ".zip", ".tar", ".gz", ".7z", ".bz2"])) {
+                $img_pic = 'zip.jpg';
+                $img_pic = ___('/admin/images/' . $img_pic);
+            }
+            if (in_array($result['ext'], [
+                ".flv", ".swf", ".mkv", ".avi", ".rm", ".rmvb", ".mpeg", ".mpg", ".wmv",
+                ".ogg", ".ogv", ".mov", ".wmv", ".mp4", ".webm", ".mp3", ".wav", ".mid", ".cab", ".iso",
+                ".ppt", ".pptx", ".pdf", ".txt", ".md", ".xml", ".psd", ".ai", ".cdr"
+            ])) {
+                $img_pic = 'file.jpg';
+                $img_pic = ___('/admin/images/' . $img_pic);
+            }
+
+            $result['view_src']=$img_pic;
+
         }
+
+
+
         $result['screen']=$screen;
         if ($result['success']==1) {
             $result['oss_type']='local';
@@ -160,9 +158,13 @@ class UploadFile
                 if(self::addOss($result['abpath'],$result['path'])){
                     self::deleteLocalFile($result['path'],0);//删除自己路径
                     $result['oss_url']=Storage::url($result['path']);
-                    $result['oss_thumb_url']=picurl($result['path']);
-                    $result['view_src']=$result['oss_thumb_url'];
-                   
+                    $result['oss_thumb_url']=$result['oss_url'];
+                    if($result['type']=='image'){
+                        $result['view_src']=$result['oss_url'];
+                    }
+
+                    $result['path']=$result['oss_url'];
+
 
                 }
 

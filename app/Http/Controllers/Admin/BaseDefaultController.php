@@ -124,7 +124,7 @@ class BaseDefaultController extends BaseController
      * @param $model
      * @return mixed
      */
-    public function setModelAddWhere($model)
+    public function setModelAddRelaction($model)
     {
         return $model;
     }
@@ -209,10 +209,10 @@ class BaseDefaultController extends BaseController
             return $this->returnApi(200, '没有初始化模型', []);
         }
         $model = $this->getSearchModel($this->setSearchParam($request->all()));
-
+        $model=$this->addListSearch($model);
         $total = $model->count();
         //是否是否关联数据等操作
-        $model = $this->setModelAddWhere($model);
+        $model = $this->setModelAddRelaction($model);
         $model = $model->skip($offset);
         $model = $this->orderBy($model, $order_by_name, $order_by_type);
         $result = $model->take($pagesize)->get();
@@ -221,7 +221,13 @@ class BaseDefaultController extends BaseController
         $arr_data = $this->apiJsonData($result);
         return $this->listJsonFormat($total, $arr_data, $debug);
     }
-
+    /**
+     * 列表增加搜索地方
+     * @param $model
+     */
+    public function addListSearch($model){
+        return $model;
+    }
     /**
      * 列表输出JSON格式
      * @param $total
@@ -255,60 +261,6 @@ class BaseDefaultController extends BaseController
         return '';
     }
 
-    /**
-     * 删除
-     * @param $id
-     * @return array|\Illuminate\Http\JsonResponse
-     */
-    public function destroy(Request $request)
-    {
-        $ids = $request->input('ids'); // 修改的表主键id批量分割字符串
-        $type_id = $request->input('type_id');
-        //分割ids
-        $id_arr = explode(',', $ids);
 
-        $id_arr = is_array($id_arr) ? $id_arr : [$id_arr];
-        if (empty($id_arr)) {
-
-            return $this->returnErrorApi('没有选择数据');
-        }
-
-        $r = $this->model->whereIn($type_id, $id_arr)->delete();
-        if ($r) {
-            $this->insertLog($this->pageName . '成功删除ids：' . implode(',', $id_arr));
-            return $this->returnOkApi('删除成功');
-        }
-        $this->insertLog($this->pageName . '删除失败ids：' . implode(',', $id_arr));
-        return $this->returnErrorApi('删除失败');
-    }
-
-    /**
-     * 表格编辑
-     * @param $id
-     * @return array|\Illuminate\Http\JsonResponse
-     */
-    public function editTable(Request $request)
-    {
-        $ids = $request->input('ids'); // 修改的表主键id批量分割字符串
-        //分割ids
-        $id_arr = explode(',', $ids);
-
-        $id_arr = is_array($id_arr) ? $id_arr : [$id_arr];
-
-        if (empty($id_arr)) {
-
-            return $this->returnErrorApi('没有选择数据');
-        }
-        $field = $request->input('field'); // 修改哪个字段
-        $value = $request->input('field_value'); // 修改字段值
-        $id = 'id'; // 表主键id值
-        $r = $this->model->whereIn($id, $id_arr)->update([$field => $value]);
-        if ($r) {
-            $this->insertLog($this->pageName . '修改成功ids：' . implode(',', $id_arr));
-            return $this->returnOkApi('修改成功');
-        }
-        $this->insertLog($this->pageName . '失败成功ids：' . implode(',', $id_arr));
-        return $this->returnOkApi('失败成功');
-    }
 
 }

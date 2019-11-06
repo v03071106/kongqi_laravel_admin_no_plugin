@@ -10,9 +10,9 @@
     <div class="layui-input-block">
 
         <div class="layui-uploads-pic layui-row layui-col-space10" id="{{ md5($data['name']) }}">
-            @if($data['src'])
+            @if($data['value'])
                 @php
-                    $thumbs=json_decode(urldecode($data['src']),1);
+                    $thumbs=json_decode(urldecode($data['value']),1);
 
                 @endphp
                 @if(!empty($thumbs) )
@@ -40,7 +40,7 @@
             @endif
 
             <div class="item layui-col-xs6 layui-col-sm3 layui-col-md2 upload-item-upload-obj">
-                <a href="javascript:void(0)" class="pic-add" id="{{ $data['obj'] }}" data-open_file="0" kq-event="upload_place" data-type="{{ $data['type']??'image' }}"  data-more="0" data-obj="#{{ md5($data['name']) }}"></a>
+                <a href="javascript:void(0)" class="pic-add" id="{{ $data['obj'] }}" data-open_file="0" kq-event="upload_place" data-type="{{ $data['type']??'image' }}"  data-more="1" data-obj="#{{ md5($data['name']) }}"></a>
 
             </div>
             <input type="hidden" name="{{ $data['name'] }}" value="{{ $data['value']??'' }}" class="upload-item-field"

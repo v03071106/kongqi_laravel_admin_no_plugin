@@ -53,7 +53,7 @@ class CheckPermissionMiddelware
         }
 
         //放行路由
-        if(in_array($on_route,['admin.home','admin.error','admin.admin.password','admin.admin.password_post','admin.home.home']))
+        if(in_array($on_route,['admin.home','admin.error','admin.admin.password','admin.admin.password_post','admin.home.home','admin.home.console']))
         {
             return $next($request);
         }

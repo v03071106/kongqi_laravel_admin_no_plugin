@@ -1,11 +1,12 @@
-layui.define(['layer', 'admin', 'layerOpen', 'uploader', 'laydate'], function (exports) {
+layui.define(['layer', 'admin', 'layerOpen', 'uploader', 'laydate','colorpicker','request'], function (exports) {
     var $ = layui.$;
     var uploader = layui.uploader;
     var admin = layui.admin;
     var custorm = {};
     var layerOpen = layui.layerOpen;
     var laydate = layui.laydate;
-
+    var colorpicker = layui.colorpicker;
+    var req = layui.request;
     //卡片伸缩
     collapse();
     //上传单图监听
@@ -51,6 +52,29 @@ layui.define(['layer', 'admin', 'layerOpen', 'uploader', 'laydate'], function (e
             uploader.more(objName);
         })
     }
+
+    //颜色选择器
+    $('[kq-event="color"]').each(function () {
+        //
+        othis = $(this);
+        var color_obj=othis.data('color_obj');
+        //标识符为选择
+
+        colorpicker.render({
+            elem: color_obj,
+            color:othis.val()
+            ,done: function(color){
+                othis.val(color);
+
+            },
+            change: function(color){
+                othis.val(color);
+
+            }
+        });
+
+
+    });
 
     $('[kq-event="date"]').each(function () {
 
@@ -165,6 +189,91 @@ layui.define(['layer', 'admin', 'layerOpen', 'uploader', 'laydate'], function (e
             }
 
             uploader.place(to_obj, type, is_more, open_file)
+        },
+        //打开layui open
+        open_layer:function(othis){
+            var w = othis.data('w');
+            var h = othis.data('h');
+            var title = othis.data('title');
+            var url = othis.data('url');
+            var config = {
+                title: title,
+                h: h,
+                w: w
+            };
+
+            yesFun = function (layero, index) {
+                layer.close(index); //关闭弹层
+            }
+            layerOpen.show(url, config, yesFun);
+
+        },
+        //打开提交编辑
+        open_layer_post:function(othis){
+            w = othis.data('w');
+            h = othis.data('h');
+            title = othis.data('title');
+            url = othis.data('url');
+            post_url = othis.data('post_url');
+            var config = {
+                title: title,
+                w: w,
+                h: h
+            };
+
+            layerOpen.edit(url, post_url, config, callFun);
+        },
+        //直接打开询问提交
+        open_post:function (othis) {
+            w = othis.data('w');
+            h = othis.data('h');
+            title = othis.data('title');
+
+            post_url = othis.data('post_url');
+            btn = othis.data('btns') || ['确定', '取消'];
+
+
+
+            var post_index=layer.open({
+                type: 1
+                ,
+                title: false //不显示标题栏
+                ,
+                closeBtn: false
+                ,
+                area: '300px;'
+                ,
+                shade: 0.2
+
+                ,
+                btn: btn
+                ,
+                btnAlign: 'c'
+                ,
+                moveType: 1 //拖拽模式，0或者1
+                ,
+                content: '<div style="padding: 20px; text-align: center; line-height: 22px; background-color: #009688; color: #fff; font-weight: 300;">' + title + '</div>'
+                ,
+                success: function (layero) {
+
+
+                }, yes: function (index, layero) {
+                    layer.close(post_index); //关闭弹层
+                    var loading = layer.load(0, {shade: false});
+                    req.post(post_url, {}, function (res) {
+                        layer.close(loading);
+                        layer.msg(res.msg);
+                        if (res.code == 200) {
+                            table.reload('LAY-list-table');
+                            layer.close(index); //关闭弹层
+
+
+                        }
+                        callFun && callFun(res)
+                    });
+                }
+
+            })
         }
 
     };

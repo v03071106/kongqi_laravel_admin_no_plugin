@@ -29,6 +29,7 @@ class BaseController extends Controller
         $this->getBlade();
         $this->setModel();
 
+
     }
 
     /**
@@ -47,5 +48,22 @@ class BaseController extends Controller
 
         AdminLog::addLog($msg);
     }
+
+    /**
+     * 模板输出
+     * @param array $data
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function display($data = [])
+    {
+
+        //取得表名
+        $this->getTable();
+        $this->pageName();
+        $this->commonBlade();
+
+        return view($this->bladePrefix.$this->bladeView, $data);
+    }
+
 
 }

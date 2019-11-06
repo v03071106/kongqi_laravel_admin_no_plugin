@@ -70,7 +70,12 @@ class AnyUpload
         $this->config = $config;//获得配置信息
         $this->type = $type;//上传类型
         if ($type == "remote") {
+
             $this->saveRemote();
+        }
+        if ($type == "avatar") {
+
+            $this->saveAvatar();
         }
         if ($type == "avatar") {
             $this->saveAvatar();
@@ -524,7 +529,8 @@ class AnyUpload
         return [
             "state" => $this->stateInfo,
             'success' => $this->stateInfo == 'SUCCESS' ? "1" : "0",
-            "path" => $this->fullName,
+            "path" => img_url($this->fullName),
+            "origin_path" => ($this->fullName),
             "filename" => $this->fileName,
             'tmpname' => $this->oriName,
             "abpath" => $this->filePath,

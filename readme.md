@@ -21,6 +21,8 @@ QQ群：650547109  欢迎交流，也欢迎定制系统，全职在家提供技�
 - 搜索功能进行了改变，减少一大堆的判断
 - blade视图自动找到文件模板，免去写很多的视图定位文件，全部自动化。
 
+### 维护说明
+由于多个系统维护，抽不出身，可能无插件版本不会长期维护。
 ### 系统说明
 
 - PHP7.2以上版本
@@ -134,7 +136,61 @@ http://www.xx.com/admin
 
 ```
 在线安装在第三步的时候，如果出现没有提示，请再次输入即可。
+### 参考.env
+```
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=base64:Az+lvZrXmg8cJkuNNilxAZQUu48rRGYYs2rA0b2cepM=
+APP_DEBUG=0
+APP_URL=http://localhost
 
+LOG_CHANNEL=stack
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=aa2
+DB_USERNAME=root
+DB_PASSWORD=123456
+DB_PREFIX=
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=6379
+REDIS_PORT=6379
+
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+LANG=zh-CN
+KONGQI_SERVER=eyJob3N0Ijoid3d3LmtxZ3pzMTUuY29tIiwiaXAiOiIxMjcuMC4wLjEiLCJwb3J0IjoiODAifQ==
+DEBUGBAR_ENABLED=false
+
+#后台绑定域名
+ADMIN_URL=
+#前端地址，只用于后台快速点击跳转快捷键
+FRONT_URL=http://www.bbs.com
+IMG_HTTP=1
+```
 安装完成
 
 ### 插件版本
